@@ -1,0 +1,31 @@
+﻿<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/src/">
+    <!-- App 只支持 x64：把解决方案的两种平台都映射到项目的 x64，VS 才不会报配置不存在 -->
+    <Project Path="src/HunterBox.Domain/HunterBox.Domain.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/HunterBox.Application/HunterBox.Application.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/HunterBox.Infrastructure/HunterBox.Infrastructure.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/HunterBox.App/HunterBox.App.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HunterBox.Tests/HunterBox.Tests.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+</Solution>

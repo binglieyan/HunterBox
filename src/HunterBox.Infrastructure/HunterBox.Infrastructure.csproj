@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Platforms>AnyCPU;x64</Platforms>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>HunterBox.Infrastructure</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HunterBox.Domain\HunterBox.Domain.csproj" />
+    <!-- 实现 Application 的 ILegacySaveImporter 端口（旧 zip 存档导入）；依赖方向仍是外层→内层。 -->
+    <ProjectReference Include="..\HunterBox.Application\HunterBox.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SharpCompress" Version="0.50.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 性能/字节断言测试需要直接验证内部流式实现（PakChecksum 累加器、PakPacker 等）。 -->
+    <InternalsVisibleTo Include="HunterBox.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Paks\FileLists\mhws.models.list.gz" />
+    <EmbeddedResource Include="Paks\FileLists\mhr.models.list.gz" />
+    <EmbeddedResource Include="Mods\NameTables\mhws_weapon.csv.gz" />
+    <EmbeddedResource Include="Mods\NameTables\mhws_armor.csv.gz" />
+    <EmbeddedResource Include="Mods\NameTables\mhws_cat_armor.csv.gz" />
+    <EmbeddedResource Include="Mods\NameTables\mhr_weapon.csv.gz" />
+    <EmbeddedResource Include="Mods\NameTables\mhr_armor.csv.gz" />
+    <EmbeddedResource Include="Mods\NameTables\mhw_weapon.csv.gz" />
+    <EmbeddedResource Include="Mods\NameTables\mhw_armor.csv.gz" />
+  </ItemGroup>
+
+</Project>

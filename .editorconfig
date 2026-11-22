@@ -1,0 +1,144 @@
+root = true
+
+# R49 C-07 / R61 N-02：所有文本文件（包括 .editorconfig 自身）保存时保留末尾换行；
+# R60 A-01：编辑期也按 CRLF + UTF-8 BOM 保存，与构建期行尾门禁和编码门禁一致，避免工具写回 LF 后
+# 直到下次构建才暴露。无 BOM/LF 例外统一在文件末尾的例外段声明。
+[*]
+insert_final_newline = true
+end_of_line = crlf
+charset = utf-8-bom
+
+# 代码质量门禁说明：
+# 1. 所有内置 NETAnalyzers 规则通过 AnalysisMode=AllEnabledByDefault 打开。
+# 2. 高价值规则在下方提升为 warning；项目开启 TreatWarningsAsErrors，因此等价于构建错误。
+# 3. 设计/性能/命名类规则显式降为 suggestion，避免为风格偏好阻塞构建；降级必须写原因。
+[*.cs]
+# 编码统一为单个 UTF-8 BOM（R15 C-06 / R16 C-02 / R17 C-04）：全仓 .cs 必须在文件头 64 字节内
+# 恰好包含一个 BOM（位于第一个字节）；正文中的 BOM 字节序列不在门禁范围内（R21 A-06/N-06）。
+# 由 CommentHygieneTests.SourceFiles_HaveExactlyOneBom 在测试阶段校验。
+charset = utf-8-bom
+# R22 D-09/A-10：全仓 C# 统一 CRLF、文件末尾只保留一个换行；由 CommentHygieneTests 校验。
+end_of_line = crlf
+# R48 A-03：编辑器保存时自动补齐末尾换行，与行尾门禁一致。
+insert_final_newline = true
+dotnet_analyzer_diagnostic.severity = suggestion
+
+# Roslynator 恢复启用：ReSharper 的告警在 agent 编程时不可见，因此保留 Roslynator。
+# 全量设为 warning 会产生 1000+ 条样式/文档告警，故整体保持 suggestion；
+# 只把“未使用成员声明”提升为构建错误，作为死代码门禁。
+dotnet_analyzer_diagnostic.category-roslynator.severity = suggestion
+dotnet_diagnostic.RCS1213.severity = warning
+
+# 分层禁用的 API：BannedApiAnalyzers 的 RS0030/RS0031 必须作为构建错误。
+dotnet_diagnostic.RS0030.severity = warning
+dotnet_diagnostic.RS0031.severity = warning
+
+# 死代码与冗余：未使用私有成员、未读取私有字段、多余 using、未使用私有字段。
+dotnet_diagnostic.IDE0051.severity = warning
+dotnet_diagnostic.IDE0052.severity = warning
+dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.CA1823.severity = warning
+
+# 资源释放：持有可释放字段的类型必须正确实现 IDisposable。
+dotnet_diagnostic.CA1001.severity = warning
+dotnet_diagnostic.CA2000.severity = warning
+dotnet_diagnostic.CA2213.severity = warning
+
+# 异常安全：不得在 finally 中抛异常，不得抛保留异常类型。
+dotnet_diagnostic.CA2201.severity = warning
+dotnet_diagnostic.CA2219.severity = warning
+
+# 取消令牌约定：新 API 应把 CancellationToken 放在最后；既有 API 保持参数顺序以稳定调用面。
+dotnet_diagnostic.CA1068.severity = suggestion
+
+# 安全：DllImport 应显式指定搜索路径。手写 P/Invoke 全部标注 System32，且由
+# LayerSourceGuardTests.PInvokes_HaveSystem32SearchPath 门禁；仅 WindowsAppSDK 生成成员在 GlobalSuppressions 中定向豁免（R16 A-04）。
+dotnet_diagnostic.CA5392.severity = warning
+dotnet_diagnostic.CA5394.severity = warning
+
+# MD5 仅用于 pak 内容去重（FileContentFingerprint），不参与安全判定，见文件内注释。
+dotnet_diagnostic.CA5351.severity = none
+
+# 以下规则属于设计/性能/命名建议，保持 suggestion，不阻塞构建。
+# CA1707：测试方法名使用 Method_Scenario_Expectation 约定；测试项目已单独设为 none。
+dotnet_diagnostic.CA1707.severity = suggestion
+# CA2007：单进程 WinUI 应用，库层不强制 ConfigureAwait(false)。
+dotnet_diagnostic.CA2007.severity = none
+# CA1031：清理/回滚路径故意捕获所有异常并转告警。
+dotnet_diagnostic.CA1031.severity = suggestion
+# CA1062：public API 已用 nullable + ArgumentNullException.ThrowIfNull 表达契约。
+dotnet_diagnostic.CA1062.severity = suggestion
+# CA1515：跨程序集公开类型是有意为之，不能简单收窄为 internal。
+dotnet_diagnostic.CA1515.severity = suggestion
+# CA1002/CA1819/CA1054/CA1055/CA1056/CA2227：既有集合与 URL 表示设计，改动收益低于风险。
+dotnet_diagnostic.CA1002.severity = suggestion
+dotnet_diagnostic.CA1819.severity = suggestion
+dotnet_diagnostic.CA1054.severity = suggestion
+dotnet_diagnostic.CA1055.severity = suggestion
+dotnet_diagnostic.CA1056.severity = suggestion
+dotnet_diagnostic.CA2227.severity = suggestion
+# 异常/API 设计与性能建议：按用户要求全部提升为 warning，作为构建门禁。
+dotnet_diagnostic.CA1032.severity = warning
+dotnet_diagnostic.CA1019.severity = warning
+dotnet_diagnostic.CA1034.severity = warning
+dotnet_diagnostic.CA1849.severity = warning
+dotnet_diagnostic.CA1859.severity = warning
+dotnet_diagnostic.CA1861.severity = warning
+dotnet_diagnostic.CA1822.severity = warning
+dotnet_diagnostic.CA1802.severity = warning
+dotnet_diagnostic.CA1512.severity = warning
+# CA1716/CA1724：命名与保留字建议，不影响运行行为。
+dotnet_diagnostic.CA1716.severity = suggestion
+dotnet_diagnostic.CA1724.severity = suggestion
+
+# StyleCop 的 SA0001 要求项目生成 XML 文档；测试项目与 App 项目不需要为所有成员生成文档。
+dotnet_diagnostic.SA0001.severity = none
+
+# App 层的事件处理器由 XAML 按名称调用，Roslyn 看不到这条引用；
+# 这里降为 suggestion，并由 XamlReferenceGuardTests 校验每个 XAML 事件处理器都有对应方法。
+[src/HunterBox.App/**/*.cs]
+dotnet_diagnostic.IDE0051.severity = suggestion
+
+# 测试项目的命名约定使用下划线（Method_Scenario_Expectation），且测试不参与安全随机数要求；
+# 崩溃/异常路径测试故意抛出通用 Exception 以模拟任意故障。
+[tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none
+dotnet_diagnostic.CA5394.severity = none
+dotnet_diagnostic.CA2201.severity = none
+dotnet_diagnostic.CA2007.severity = none
+# 测试使用同步 API、内联数组与接口类型是为了可读性和覆盖端口契约，性能/具体类型建议不适用。
+dotnet_diagnostic.CA1849.severity = none
+dotnet_diagnostic.CA1859.severity = none
+dotnet_diagnostic.CA1861.severity = none
+# 测试项目不生成 XML 文档，IDE0005 无法在构建期安全判定 using 是否冗余，保持 suggestion。
+dotnet_diagnostic.IDE0005.severity = suggestion
+
+# R47 D-01/A-01：XAML 与 C# 一样统一 UTF-8 BOM + CRLF，逐行行尾门禁覆盖 .xaml。
+[*.xaml]
+charset = utf-8-bom
+end_of_line = crlf
+insert_final_newline = true
+
+# R60 A-01 / R61 C-04：例外只覆盖 [*] 的 CRLF+BOM 约定，与 tools/text-file-extensions.txt 的声明范围互补。
+# .json 保持无 BOM + LF（global.json 等仓库配置的现状），避免编辑器保存时产生无意义的 CRLF 差异。
+[*.json]
+charset = utf-8
+end_of_line = lf
+
+[.editorconfig]
+charset = utf-8
+
+[.gitattributes]
+charset = utf-8
+
+[.gitignore]
+charset = utf-8
+
+# R61 A-02：Windows 应用清单保持无 BOM（CRLF 与 [*] 一致），避免编辑器保存时插入 BOM。
+[app.manifest]
+charset = utf-8
+
+# Git 钩子由 sh 执行，必须保持 LF（与 .gitattributes 的 eol=lf 一致）。
+[.githooks/*]
+charset = utf-8
+end_of_line = lf

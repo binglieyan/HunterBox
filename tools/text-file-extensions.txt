@@ -1,0 +1,12 @@
+﻿# HunterBox 声明范围文本文件的扩展名（每行一个，含点）。
+# 编码门禁、行尾门禁、构建期校验与 .gitattributes 一致性用例共同使用这份清单。
+.cs
+.md
+.csproj
+.props
+.targets
+.xaml
+.slnx
+.ps1
+.txt
+.pubxml

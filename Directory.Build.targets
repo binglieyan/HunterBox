@@ -1,0 +1,19 @@
+﻿<Project>
+  <!--
+    构建期行尾门禁。锚定在 HunterBox.Domain（其余项目都直接或间接依赖它），
+    避免每个项目重复启动 PowerShell；DesignTimeBuild 跳过，避免 IDE 输入时反复失败。
+    任何工具把声明范围内的文件写成 LF 后，下一次构建会在这里失败。
+
+    本目标每次构建固定执行一次
+    （本机实测约 1.6 秒，主要是 PowerShell 启动 + 全部声明文件）。
+    不做按修改时间的增量判定，因为“文件被写回 LF 但时间戳未变/被保留”会让增量门禁漏检，
+    且需要额外的 stamp 失效规则；这里选择实现简单、不可绕过，固定开销作为已知取舍记录在 wiki09 与本注释。
+  -->
+  <Target Name="VerifyTextFileLineEndings"
+          BeforeTargets="Build"
+          Condition="'$(MSBuildProjectName)' == 'HunterBox.Domain' and '$(DesignTimeBuild)' != 'true'">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)tools\verify-line-endings.ps1&quot; -Root &quot;$(MSBuildThisFileDirectory).&quot;"
+          StandardOutputImportance="low"
+          StandardErrorImportance="high" />
+  </Target>
+</Project>

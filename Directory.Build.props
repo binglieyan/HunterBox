@@ -1,0 +1,29 @@
+﻿<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- 分析器门禁：所有规则开启，默认严重级别由 .editorconfig 统一控制。 -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <!-- 通用分析器：所有规则以 suggestion 运行，高价值规则在 .editorconfig 中提升为 warning。 -->
+  <ItemGroup>
+    <PackageReference Include="Roslynator.Analyzers" Version="5.0.1" PrivateAssets="all" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.3.180" PrivateAssets="all" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.37.0.15768" PrivateAssets="all" />
+    <PackageReference Include="Meziantou.Analyzer" Version="3.0.341" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- 分层禁用的 API：编译期直接报 RS0030，配合 TreatWarningsAsErrors 变成构建失败。 -->
+  <!-- App 也接入同一门禁（文件 IO/JSON/注册表/HTTP），避免只靠源码扫描漏掉新通道。 -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'HunterBox.Domain' Or '$(MSBuildProjectName)' == 'HunterBox.Application' Or '$(MSBuildProjectName)' == 'HunterBox.App'">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="5.6.0" PrivateAssets="all" />
+    <AdditionalFiles Include="BannedSymbols.txt" />
+  </ItemGroup>
+</Project>

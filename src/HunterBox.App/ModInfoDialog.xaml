@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="HunterBox.App.ModInfoDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="MOD信息设置"
+    PrimaryButtonText="保存"
+    CloseButtonText="取消"
+    DefaultButton="Primary">
+
+    <StackPanel Spacing="10" Width="420">
+        <TextBox x:Name="NameBox" Header="名字" />
+        <TextBox x:Name="CategoryBox" Header="分类" />
+        <TextBox x:Name="VersionBox" Header="版本" />
+        <TextBox x:Name="AuthorBox" Header="作者" />
+        <TextBox x:Name="NexusBox" Header="NexusMods ID" InputScope="Number" />
+        <TextBox x:Name="HomeUrlBox" Header="MOD来源网址" />
+        <TextBox x:Name="DescriptionBox" Header="备注信息" AcceptsReturn="True" Height="80" />
+    </StackPanel>
+</ContentDialog>

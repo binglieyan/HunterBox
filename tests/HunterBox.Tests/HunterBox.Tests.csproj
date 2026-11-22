@@ -1,0 +1,104 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Platforms>AnyCPU;x64</Platforms>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>HunterBox.Tests</RootNamespace>
+    <!-- 门禁触发条件只在这里定义一次；
+         Debug/筛选/list-tests 的跳过提示由 ReportHunterBoxTestGateSkipped 输出，自定义 logger 由脚本输出。 -->
+    <HunterBoxTestGateEnabled Condition="'$(Configuration)' == 'Release' AND '$(VSTestTestCaseFilter)' == '' AND '$(VSTestListTests)' != 'true'">true</HunterBoxTestGateEnabled>
+    <HunterBoxTestGateEnabled Condition="'$(HunterBoxTestGateEnabled)' == ''">false</HunterBoxTestGateEnabled>
+    <VSTestLogger Condition="'$(HunterBoxTestGateEnabled)' == 'true'">trx</VSTestLogger>
+    <!-- 默认结果目录只定义一次，校验与预清理共用，避免两处字面量静默漂移。 -->
+    <HunterBoxDefaultResultsDirectory>$(MSBuildThisFileDirectory)..\..\TestResults</HunterBoxDefaultResultsDirectory>
+    <VSTestResultsDirectory Condition="'$(VSTestResultsDirectory)' == ''">$(HunterBoxDefaultResultsDirectory)</VSTestResultsDirectory>
+    <!-- 保留份数只定义一次，校验与预清理共用。 -->
+    <HunterBoxKeepLatestTrx>5</HunterBoxKeepLatestTrx>
+    <!-- 两个目标共用的路径只在求值阶段计算一次。 -->
+    <_HunterBoxTestRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..'))</_HunterBoxTestRoot>
+    <_HunterBoxVerifyScript>$([System.IO.Path]::Combine('$(_HunterBoxTestRoot)', 'tools', 'verify-test-counts.ps1'))</_HunterBoxVerifyScript>
+    <!--
+      默认结果目录由 $(MSBuildThisFileDirectory) 生成，本身是绝对路径，
+      统一走「绝对路径原样归一」分支；用户显式传入的相对目录按 MSBuild 启动目录解析（与 VSTest 的基准一致）。
+    -->
+    <_HunterBoxResultsDirectory Condition="$([System.IO.Path]::IsPathRooted('$(VSTestResultsDirectory)'))">$([System.IO.Path]::GetFullPath('$(VSTestResultsDirectory)'))</_HunterBoxResultsDirectory>
+    <_HunterBoxResultsDirectory Condition="'$(_HunterBoxResultsDirectory)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildStartupDirectory)\$(VSTestResultsDirectory)'))</_HunterBoxResultsDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.12.0" PrivateAssets="all" />
+    <PackageReference Include="xunit" Version="2.9.3" PrivateAssets="all" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\HunterBox.Domain\HunterBox.Domain.csproj" />
+    <ProjectReference Include="..\..\src\HunterBox.Application\HunterBox.Application.csproj" />
+    <ProjectReference Include="..\..\src\HunterBox.Infrastructure\HunterBox.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 脚本随测试输出部署，脚本用例不再依赖源码树。 -->
+    <None Include="..\..\tools\verify-test-counts.ps1" Link="tools\verify-test-counts.ps1" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!--
+    源码脚本路径可被测试覆盖；
+    构建后与 VSTest 前都检查部署副本 SHA-256，漂移或副本缺失都会阻断。
+  -->
+  <PropertyGroup>
+    <HunterBoxGateScriptSource Condition="'$(HunterBoxGateScriptSource)' == ''">$(MSBuildThisFileDirectory)..\..\tools\verify-test-counts.ps1</HunterBoxGateScriptSource>
+  </PropertyGroup>
+
+  <Target Name="VerifyHunterBoxTestGateScript" BeforeTargets="VSTest" AfterTargets="Build">
+    <Error Condition="!Exists('$(HunterBoxGateScriptSource)')"
+           Text="计数脚本源码不存在：$(HunterBoxGateScriptSource)。" />
+    <Error Condition="!Exists('$(OutDir)tools\verify-test-counts.ps1')"
+           Text="计数脚本部署副本不存在：$(OutDir)tools\verify-test-counts.ps1。" />
+    <GetFileHash Files="$(HunterBoxGateScriptSource)" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="_HunterBoxGateSourceHash" />
+    </GetFileHash>
+    <GetFileHash Files="$(OutDir)tools\verify-test-counts.ps1" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="_HunterBoxGateDeployedHash" />
+    </GetFileHash>
+    <Error Condition="'@(_HunterBoxGateSourceHash->'%(FileHash)')' != '@(_HunterBoxGateDeployedHash->'%(FileHash)')'"
+           Text="计数脚本部署副本与源码不一致：请重新构建 tests/HunterBox.Tests。" />
+  </Target>
+
+  <!-- 仅门禁启用时记录开始时间；输出使用 UTC（"o" 以 Z 结尾）。 -->
+  <Target Name="RecordHunterBoxTestRunStart" BeforeTargets="VSTest" Condition="'$(HunterBoxTestGateEnabled)' == 'true'">
+    <PropertyGroup>
+      <_HunterBoxTestRunStartedUtc>$([System.DateTime]::UtcNow.ToString("o"))</_HunterBoxTestRunStartedUtc>
+    </PropertyGroup>
+    <Message Importance="high" Text="记录测试开始时间：$(_HunterBoxTestRunStartedUtc)" />
+    <Message Importance="high" Text="门禁结果目录：$(_HunterBoxResultsDirectory)" />
+  </Target>
+
+  <!-- Debug/筛选/list-tests 由本目标提示；自定义 logger 仍会启动校验脚本并在脚本内跳过。 -->
+  <Target Name="ReportHunterBoxTestGateSkipped" AfterTargets="VSTest" Condition="'$(HunterBoxTestGateEnabled)' != 'true'">
+    <Message Importance="high" Text="跳过计数门禁：本次不是 Release 全量运行（Debug/筛选/list-tests）；详见 tools/verify-test-counts.ps1。" />
+  </Target>
+
+  <!--
+    VSTest 之前先收敛旧 TRX。测试失败时 AfterTargets 不会执行，预清理保证失败运行也不会无限累积。
+  -->
+  <Target Name="PruneHunterBoxTestResults" BeforeTargets="VSTest" Condition="'$(HunterBoxTestGateEnabled)' == 'true'">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(_HunterBoxVerifyScript)&quot; -PruneOnly -TrxDirectory &quot;$(_HunterBoxResultsDirectory)&quot; -KeepLatestTrx $(HunterBoxKeepLatestTrx)" />
+  </Target>
+
+  <!--
+    门禁启用时启动脚本；脚本是计数结论的唯一判定点。
+    自定义 logger 不改变门禁启用条件，由脚本按记录器名称输出跳过原因。
+    注意：本目标假设只含一个测试工程并使用默认 trx logger；自定义 runsettings 或多测试工程需分别校验（见 wiki09）。
+  -->
+  <Target Name="VerifyHunterBoxTestCounts" AfterTargets="VSTest" Condition="'$(HunterBoxTestGateEnabled)' == 'true'">
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(_HunterBoxVerifyScript)&quot; -Configuration &quot;$(Configuration)&quot; -TestCaseFilter &quot;$(VSTestTestCaseFilter)&quot; -ListTests &quot;$(VSTestListTests)&quot; -Logger &quot;$(VSTestLogger)&quot; -TrxDirectory &quot;$(_HunterBoxResultsDirectory)&quot; -NotBeforeUtc &quot;$(_HunterBoxTestRunStartedUtc)&quot; -KeepLatestTrx $(HunterBoxKeepLatestTrx)" />
+  </Target>
+
+</Project>

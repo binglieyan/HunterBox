@@ -1,0 +1,27 @@
+﻿; HunterBox.Domain 分层禁用清单。
+; System.IO.Path 有意允许：只做纯字符串路径运算，不触碰文件系统。
+; Domain 不得引入 System.Text.Json 包；下列 JSON/Stream 类型与 Application 清单对齐，防止通过反射/类型引用绕过。
+T:System.IO.File
+T:System.IO.Directory
+T:System.IO.FileInfo
+T:System.IO.DirectoryInfo
+T:System.IO.FileSystemInfo
+T:System.IO.FileStream
+T:System.IO.StreamReader
+T:System.IO.StreamWriter
+T:System.IO.FileSystemWatcher
+T:System.Text.Json.JsonSerializer
+T:System.Text.Json.JsonDocument
+T:System.Text.Json.JsonElement
+T:System.Text.Json.JsonSerializerOptions
+T:System.Text.Json.Utf8JsonWriter
+T:System.Text.Json.Utf8JsonReader
+T:System.Text.Json.Nodes.JsonNode
+T:Microsoft.Win32.Registry
+T:Microsoft.Win32.RegistryKey
+T:System.Net.Http.HttpClient
+T:System.Diagnostics.Process
+M:System.Xml.Linq.XDocument.Load(System.String)
+T:System.Text.Json.Serialization.ReferenceHandler
+T:System.Text.Json.Serialization.ReferenceResolver
+T:System.Text.Json.Serialization.IJsonTypeInfoResolver

@@ -1,0 +1,5 @@
+#!/bin/sh
+# R52 T-01：提交前校验声明范围文本文件的行尾。
+# 启用方式（每位开发者执行一次）：git config core.hooksPath .githooks
+root=$(git rev-parse --show-toplevel) || exit 1
+exec powershell -NoProfile -ExecutionPolicy Bypass -File "$root/tools/verify-line-endings.ps1" -Root "$root"

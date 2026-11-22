@@ -1,0 +1,16 @@
+﻿# 行尾门禁与测试枚举共用的剪枝目录名（每行一个，忽略大小写）。
+# 构建期 tools/verify-line-endings.ps1 与测试 SourceTreeLocator 都读取本文件，
+# 避免两份边界各自维护而漂移。
+.local
+.trae
+.git
+bin
+obj
+dist
+TestResults
+.vs
+.codegraph
+node_modules
+.venv
+venv
+target

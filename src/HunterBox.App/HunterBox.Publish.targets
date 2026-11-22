@@ -1,0 +1,99 @@
+﻿<Project>
+
+  <!-- 发布前清空输出目录；目录被占用（例如程序正在运行）时给出明确提示，而不是让 VS 报“未知错误” -->
+  <Target Name="HunterBoxCleanPublishDir" BeforeTargets="PrepareForPublish" Condition="'$(PublishDir)' != ''">
+    <RemoveDir Directories="$(PublishDir)" ContinueOnError="true" Condition="Exists('$(PublishDir)')" />
+    <Error Condition="Exists('$(PublishDir)')"
+           Text="发布目录无法清空：$(PublishDir)。请先关闭正在运行的 HunterBox.App.exe 后重试。" />
+  </Target>
+
+  <!--
+    dotnet publish 不会把 WinUI 的资源索引 <AssemblyName>.pri 复制过去，
+    缺了它 unpackaged 应用启动即 0xC000027B（stowed exception）。
+  -->
+  <Target Name="HunterBoxCopyPri" AfterTargets="Publish" Condition="Exists('$(TargetDir)$(AssemblyName).pri')">
+    <Copy SourceFiles="$(TargetDir)$(AssemblyName).pri" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- 只保留常用语言，其余语言目录删掉（WinAppSDK 自带上百个）。失败不阻断发布 -->
+  <Target Name="HunterBoxTrimLocales" AfterTargets="HunterBoxCopyPri" Condition="'$(HunterBoxKeepAllLocales)' != 'true'">
+    <Exec Command="powershell -NoProfile -Command &quot;Get-ChildItem '$(PublishDir)' -Directory | Where-Object { $_.Name -match '^[a-z]{2,3}(-[A-Za-z]{2,4}){1,2}$' -and @('zh-CN','zh-TW','en-us','ja-JP') -notcontains $_.Name } | Remove-Item -Recurse -Force&quot;"
+          ContinueOnError="WarnAndContinue" />
+  </Target>
+
+  <!--
+    剔除用不到的组件：Windows App SDK 自包含会带进 AI/ML（onnxruntime + DirectML，约 40 MB）、
+    Search、WebView2 等，本应用一个都用不到。注意保留 Microsoft.InteractiveExperiences.Projection.dll，
+    缺了它启动会 0xC000027B。
+  -->
+  <Target Name="HunterBoxTrimComponents" AfterTargets="HunterBoxTrimLocales">
+    <ItemGroup>
+      <HunterBoxUnused Include="$(PublishDir)onnxruntime.dll" />
+      <HunterBoxUnused Include="$(PublishDir)DirectML.dll" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.ML.OnnxRuntime.dll" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Asg.*.dll" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.AI*.dll" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.AI*.winmd" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Internal.AI*.winmd" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Search*.*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.SemanticSearch*.winmd" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Internal.SemanticSearch*.winmd" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Vision*.winmd" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Internal.Vision*.winmd" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Web.WebView2*.dll" />
+      <HunterBoxUnused Include="$(PublishDir)WebView2Loader.dll" />
+      <!-- 未使用的 Windows App SDK 功能组件（手机/桌面设计器/Widgets/工作负载/通知/部署/后台/OAuth 等） -->
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.UI.Xaml.Phone.dll" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.UI.Designer.dll" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Widgets*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Workloads*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Private.Workloads*" />
+      <HunterBoxUnused Include="$(PublishDir)workloads*.json" />
+      <HunterBoxUnused Include="$(PublishDir)PerceptiveStreaming*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Graphics.Imaging*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Graphics.Internal.Imaging*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.ImageCreationInternal*" />
+      <HunterBoxUnused Include="$(PublishDir)System.Numerics.Tensors.dll" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Management.Deployment*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.ApplicationModel.Background*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.AppNotifications*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.BadgeNotifications*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.PushNotifications*" />
+      <HunterBoxUnused Include="$(PublishDir)PushNotificationsLongRunningTask.ProxyStub.dll" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Security.Authentication.OAuth*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Globalization*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Foundation*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Private*" />
+      <!-- 其它未使用的 Windows SDK / WinAppSDK 可选组件与多语言残留 -->
+      <HunterBoxUnused Include="$(PublishDir)NPUDetect.dll" />
+      <HunterBoxUnused Include="$(PublishDir)SessionHandleIPCProxyStub.dll" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Media.Capture*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.Security.AccessControl*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.System.Power*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.System.Projection*" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Graphics.Display.dll" />
+      <HunterBoxUnused Include="$(PublishDir)**\Microsoft.UI.Xaml.Phone.dll.mui" />
+      <!-- XML 文档只是给开发者的，运行时不需要 -->
+      <HunterBoxUnused Include="$(PublishDir)*.xml" />
+      <!-- 只有 WindowsAppSDK 自包含时才能删掉 Bootstrap/动态依赖；框架依赖模式需要它们 -->
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.ApplicationModel.DynamicDependency*"
+                       Condition="'$(WindowsAppSDKSelfContained)' != 'false'" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.ApplicationModel.WindowsAppRuntime*"
+                       Condition="'$(WindowsAppSDKSelfContained)' != 'false'" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.Windows.AppLifecycle*"
+                       Condition="'$(WindowsAppSDKSelfContained)' != 'false'" />
+      <HunterBoxUnused Include="$(PublishDir)Microsoft.WindowsAppRuntime.Bootstrap*"
+                       Condition="'$(WindowsAppSDKSelfContained)' != 'false'" />
+    </ItemGroup>
+    <Delete Files="@(HunterBoxUnused)" ContinueOnError="WarnAndContinue" />
+  </Target>
+
+  <!-- 调试符号不进发布包 -->
+  <Target Name="HunterBoxTrimSymbols" AfterTargets="HunterBoxTrimComponents">
+    <ItemGroup>
+      <HunterBoxPdb Include="$(PublishDir)**\*.pdb" />
+    </ItemGroup>
+    <Delete Files="@(HunterBoxPdb)" ContinueOnError="WarnAndContinue" />
+  </Target>
+
+</Project>

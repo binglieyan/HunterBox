@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="HunterBox.App.SettingsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="设置"
+    PrimaryButtonText="保存设置"
+    CloseButtonText="取消"
+    DefaultButton="Primary"
+    PrimaryButtonClick="OnPrimaryButtonClick">
+
+    <Grid>
+        <ScrollViewer MaxHeight="560" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Width="480" Spacing="10">
+            <TextBlock x:Name="GameText" FontWeight="SemiBold" />
+
+            <!-- /：外观主题（跟随系统/浅色/深色），保存后由 MainWindow 立即应用到根元素并持久化。 -->
+            <TextBlock Text="外观主题" Style="{StaticResource DialogSectionHeaderTextStyle}" Margin="0,0,0,0" />
+            <ComboBox x:Name="ThemeCombo" HorizontalAlignment="Stretch"
+                      ToolTipService.ToolTip="跟随系统时随 Windows 深色/浅色设置切换；选择浅色/深色会强制固定该主题。">
+                <ComboBoxItem Content="跟随系统" Tag="system" />
+                <ComboBoxItem Content="浅色" Tag="light" />
+                <ComboBoxItem Content="深色" Tag="dark" />
+            </ComboBox>
+            <TextBlock Text="保存设置后立即生效，无需重启。" Style="{StaticResource DialogHintTextStyle}" />
+
+            <TextBlock Text="游戏路径（游戏安装目录，必须包含游戏主程序）" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBox x:Name="GamePathBox" Grid.Column="0"
+                         PlaceholderText="例如：...\steamapps\common\MonsterHunterWilds" />
+                <Button Grid.Column="1" Content="选择..." MinWidth="90"
+                        Click="BrowseGamePath_Click" ToolTipService.ToolTip="选择游戏安装目录（目录里要有游戏主程序）" />
+            </Grid>
+
+            <TextBlock Text="存档路径（可选，留空则首次备份时再选）" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <TextBox x:Name="SavePathBox" Grid.Column="0"
+                         PlaceholderText="例如：...\Steam\userdata\账号\2246340\remote" />
+                <Button Grid.Column="1" Content="选择..." MinWidth="90"
+                        Click="BrowseSavePath_Click" ToolTipService.ToolTip="选择游戏存档目录" />
+            </Grid>
+            <Button Content="重新识别缺失路径" HorizontalAlignment="Left" MinWidth="140"
+                    Click="RedetectPaths_Click"
+                    ToolTipService.ToolTip="只重新探测仍为空的游戏/存档路径；已填写的值不变。" />
+
+            <TextBlock Text="安装选项" Style="{StaticResource DialogSectionHeaderTextStyle}" />
+            <RadioButton x:Name="OptionNone" Content="无操作" GroupName="installOption" />
+            <RadioButton x:Name="OptionCopy" Content="把安装包复制到HunterBox文件夹" GroupName="installOption" />
+            <RadioButton x:Name="OptionMove" Content="把安装包移动到HunterBox文件夹" GroupName="installOption" />
+
+            <TextBlock Text="HunterBox功能设置" Style="{StaticResource DialogSectionHeaderTextStyle}" />
+            <CheckBox x:Name="FixPakBox" Content="自动修正PAK"
+                      Checked="CriticalSetting_Changed" Unchecked="CriticalSetting_Changed"
+                      ToolTipService.ToolTip="开启：pak 按 patch 编号放进 pak_mods，编号接在已有编号之后（推荐）。关闭：pak 按原文件名放入，多个 MOD 同名时容易残留或互相覆盖。" />
+            <TextBlock Text="关闭后 pak 按原文件名放入 pak_mods，多个 MOD 同名时容易残留。"
+                       Style="{StaticResource DialogHintTextStyle}" />
+            <CheckBox x:Name="CheckPakFilesBox" Content="检查PAK内部文件"
+                      ToolTipService.ToolTip="启用 MOD 时展开 pak 内部文件（路径哈希）与已启用 MOD 比对，发现重叠时提示（不阻止启用）。" />
+            <TextBlock Text="开启后启用 MOD 时会展开 pak 内部文件比对，发现重叠时给出提示。"
+                       Style="{StaticResource DialogHintTextStyle}" />
+            <CheckBox x:Name="CheckGameRunningBox" Content="检测游戏状态"
+                      Checked="CriticalSetting_Changed" Unchecked="CriticalSetting_Changed"
+                      ToolTipService.ToolTip="开启（推荐）：游戏运行时启用/禁用/清理 MOD 会被拦截，避免文件占用导致残留。关闭后游戏运行中也允许操作，可能出现半套文件。" />
+            <TextBlock Text="关闭后游戏运行时也能操作 MOD，可能出现半套文件或残留；建议保持开启。"
+                       Style="{StaticResource DialogHintTextStyle}" />
+
+            <TextBlock x:Name="RiskText" Visibility="Collapsed" TextWrapping="Wrap"
+                       Foreground="{ThemeResource SystemFillColorCautionBrush}" />
+            <TextBlock x:Name="StatusText" Style="{StaticResource DialogHintTextStyle}" />
+        </StackPanel>
+        </ScrollViewer>
+
+        <!-- 无效路径提示浮层：ContentDialog 内不能再弹第二个 ContentDialog，这里用对话框内模态浮层。
+             面板用 ContentDialogBackground（不透明）；不加遮罩压暗，避免弹窗出现时原界面整体变黑。
+             用 Transparent 背景让 Grid 参与命中测试，挡住下层点击。 -->
+        <Grid x:Name="ErrorOverlay" Background="Transparent" Visibility="Collapsed"
+              Canvas.ZIndex="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Border Background="{ThemeResource ContentDialogBackground}"
+                    BorderBrush="{ThemeResource ContentDialogBorderBrush}" BorderThickness="1"
+                    CornerRadius="8" Padding="20" MaxWidth="520"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="无法应用所选路径" FontWeight="SemiBold" FontSize="16" />
+                    <TextBlock x:Name="ErrorText" TextWrapping="Wrap" />
+                    <Button Content="知道了" MinWidth="88" HorizontalAlignment="Right"
+                            Click="DismissError_Click" />
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentDialog>

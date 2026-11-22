@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>HunterBox.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Product>HunterBox</Product>
+    <AssemblyTitle>HunterBox</AssemblyTitle>
+    <Description>HunterBox - Monster Hunter MOD manager</Description>
+    <Copyright>Copyright © 2026 HunterBox contributors</Copyright>
+    <ApplicationIcon>Assets\hunterbox.ico</ApplicationIcon>
+    <!-- 产品版本号：主窗口标题「HunterBox v{版本} - {当前游戏}」与程序集版本统一从这里来。 -->
+    <Version>1.5.207</Version>
+    <AssemblyVersion>1.5.207.0</AssemblyVersion>
+    <FileVersion>1.5.207.0</FileVersion>
+    <Platforms>AnyCPU;x64</Platforms>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.7.0" />
+  </ItemGroup>
+
+  <!-- 窗口/任务栏图标在运行时通过 AppWindow.SetIcon 加载，需要把 .ico 复制到输出目录。 -->
+  <ItemGroup>
+    <Content Include="Assets\hunterbox.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HunterBox.Domain\HunterBox.Domain.csproj" />
+    <ProjectReference Include="..\HunterBox.Application\HunterBox.Application.csproj" />
+    <ProjectReference Include="..\HunterBox.Infrastructure\HunterBox.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <!-- 发布步骤：清目录、补 pri、精简语言与组件、剔符号。只挂在 Publish 上，普通构建不受影响。 -->
+  <Import Project="HunterBox.Publish.targets" Condition="Exists('HunterBox.Publish.targets')" />
+
+</Project>

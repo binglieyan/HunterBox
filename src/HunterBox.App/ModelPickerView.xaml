@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="HunterBox.App.ModelPickerView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 目标模型面板：上方搜索框按名称/模型 ID 模糊过滤，单击列表项即选中并关闭面板。 -->
+    <Grid Width="520" Padding="12" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+        <TextBlock x:Name="TitleText" Grid.Row="0" TextTrimming="CharacterEllipsis"
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+        <TextBox x:Name="SearchBox" Grid.Row="1" PlaceholderText="输入模型名称或模型 ID 模糊搜索"
+                 TextChanged="SearchBox_TextChanged" KeyDown="SearchBox_KeyDown" />
+
+        <Grid Grid.Row="2">
+            <ListView x:Name="ChoiceList" MinHeight="200" MaxHeight="360" SelectionMode="None" IsItemClickEnabled="True"
+                      ItemClick="ChoiceList_ItemClick"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="MinHeight" Value="32" />
+                        <Setter Property="FontSize" Value="13" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="12,4">
+                            <TextBlock Text="{Binding Display}" VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <TextBlock x:Name="EmptyText" IsHitTestVisible="False" Visibility="Collapsed"
+                       HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center"
+                       TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       Text="没有匹配的模型" />
+        </Grid>
+
+        <TextBlock x:Name="CountText" Grid.Row="3" TextWrapping="Wrap"
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+    </Grid>
+</UserControl>

@@ -1,0 +1,96 @@
+###############################################################################
+# Set default behavior to automatically normalize line endings.
+###############################################################################
+* text=auto
+
+# R53 C-06/A-02：`* text=auto` 只是未显式声明文本文件的平台默认归一化策略；
+# 下方对声明范围内的扩展名显式要求 `eol=crlf`，显式规则优先，两者不冲突。
+
+###############################################################################
+# R50 T-02/A-01：源码与文档显式要求检出为 CRLF，避免纯 LF 工作副本在 diff 中不可见
+# （R28 T-01、R47 D-01、R50 T-01 已出现三次行尾回归）。
+###############################################################################
+*.cs     text eol=crlf
+*.xaml   text eol=crlf
+*.csproj text eol=crlf
+*.props  text eol=crlf
+*.targets text eol=crlf
+*.slnx   text eol=crlf
+*.ps1    text eol=crlf
+*.md     text eol=crlf
+*.txt    text eol=crlf
+*.pubxml text eol=crlf
+
+# R62 C-01：`.editorconfig` 的例外段必须在版本库属性中同样固定，否则 core.autocrlf=true 的干净检出
+# 会把 global.json 写成 CRLF、与 [*.json] end_of_line = lf 及门禁用例冲突。
+*.json        text eol=lf
+app.manifest  text eol=crlf
+
+# R54 A-02：属性文件自身也显式要求 CRLF，避免注释行再次出现裸 LF。
+.gitattributes text eol=crlf
+
+# R63 A-02：编辑器/仓库配置自身也固定 CRLF（无 BOM 由 .editorconfig 例外段声明）。
+.editorconfig text eol=crlf
+.gitignore    text eol=crlf
+
+# R52 T-01：Git 钩子由 sh 执行，必须保持 LF（无扩展名，不参与声明范围的门禁）。
+.githooks/* text eol=lf
+
+###############################################################################
+# Set default behavior for command prompt diff.
+#
+# This is need for earlier builds of msysgit that does not have it on by
+# default for csharp files.
+# Note: This is only used by command line
+###############################################################################
+#*.cs     diff=csharp
+
+###############################################################################
+# Set the merge driver for project and solution files
+#
+# Merging from the command prompt will add diff markers to the files if there
+# are conflicts (Merging from VS is not affected by the settings below, in VS
+# the diff markers are never inserted). Diff markers may cause the following 
+# file extensions to fail to load in VS. An alternative would be to treat
+# these files as binary and thus will always conflict and require user
+# intervention with every merge. To do so, just uncomment the entries below
+###############################################################################
+#*.sln       merge=binary
+#*.csproj    merge=binary
+#*.vbproj    merge=binary
+#*.vcxproj   merge=binary
+#*.vcproj    merge=binary
+#*.dbproj    merge=binary
+#*.fsproj    merge=binary
+#*.lsproj    merge=binary
+#*.wixproj   merge=binary
+#*.modelproj merge=binary
+#*.sqlproj   merge=binary
+#*.wwaproj   merge=binary
+
+###############################################################################
+# behavior for image files
+#
+# image files are treated as binary by default.
+###############################################################################
+#*.jpg   binary
+#*.png   binary
+#*.gif   binary
+
+###############################################################################
+# diff behavior for common document formats
+# 
+# Convert binary document formats to text before diffing them. This feature
+# is only available from the command line. Turn it on by uncommenting the 
+# entries below.
+###############################################################################
+#*.doc   diff=astextplain
+#*.DOC   diff=astextplain
+#*.docx  diff=astextplain
+#*.DOCX  diff=astextplain
+#*.dot   diff=astextplain
+#*.DOT   diff=astextplain
+#*.pdf   diff=astextplain
+#*.PDF   diff=astextplain
+#*.rtf   diff=astextplain
+#*.RTF   diff=astextplain

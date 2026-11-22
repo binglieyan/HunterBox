@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="HunterBox.App.LegacyMigrationDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="导入旧数据"
+    PrimaryButtonText="导入"
+    CloseButtonText="取消"
+    DefaultButton="Close"
+    PrimaryButtonClick="OnPrimaryClick"
+    Closing="OnDialogClosing">
+
+    <StackPanel Spacing="12" MinWidth="560">
+        <TextBlock x:Name="SummaryText" TextWrapping="Wrap" FontSize="13" />
+        <TextBlock x:Name="EmptyHintText"
+                   Text="如果旧HunterBox版本较老或安装在其它目录，可以把旧的 Mods_&lt;appid&gt;、sjmodbox.ini、Backup_&lt;appid&gt; 复制到本程序目录后再打开本对话框。"
+                   TextWrapping="Wrap" FontSize="12"
+                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+        <Border Padding="12" CornerRadius="4"
+                Background="{ThemeResource SolidBackgroundFillColorSecondaryBrush}">
+            <StackPanel Spacing="4">
+                <TextBlock Text="导入规则" FontWeight="SemiBold" />
+                <TextBlock TextWrapping="Wrap" FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}">
+                    · 只读复制，不移动/删除旧文件；导入后可随时回退。
+                    · 旧 MOD 的启用状态不沿用（新HunterBox要求文件实际落盘才视为启用）。
+                    · 旧存档 zip 请在「存档管理 → 导入旧存档 zip」中处理。
+                </TextBlock>
+            </StackPanel>
+        </Border>
+        <TextBlock x:Name="StatusText" TextWrapping="Wrap" Visibility="Collapsed"
+                   Foreground="{ThemeResource SystemFillColorCriticalBrush}" FontSize="12" />
+        <Button x:Name="CancelImportButton" Content="取消导入" Click="CancelImport_Click"
+                HorizontalAlignment="Right" Visibility="Collapsed" />
+    </StackPanel>
+</ContentDialog>

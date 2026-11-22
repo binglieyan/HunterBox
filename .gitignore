@@ -1,0 +1,28 @@
+# 构建产物
+bin/
+obj/
+
+# IDE
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# 临时
+*.tmp
+*.bak
+
+# 发布产物
+dist/
+
+# 代码图谱与编辑器本地缓存
+.codegraph/
+.trae/
+
+# 测试结果（全量运行 TRX，用于计数门禁）
+TestResults/
+*.trx
+
+# 本地验证数据（游戏清单等，不入库）
+.local/

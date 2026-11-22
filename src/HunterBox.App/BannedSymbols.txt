@@ -1,0 +1,27 @@
+﻿; HunterBox.App 分层禁用清单。
+; 业务性文件 IO 必须走 IFileSystem/Application 用例；JSON 实现细节留在 Infrastructure。
+; System.Diagnostics.Process 有意允许：App 只用它启动游戏/打开目录（UseShellExecute），不做进程检查。
+T:System.IO.File
+T:System.IO.Directory
+T:System.IO.FileInfo
+T:System.IO.DirectoryInfo
+T:System.IO.FileSystemInfo
+T:System.IO.FileStream
+T:System.IO.StreamReader
+T:System.IO.StreamWriter
+T:System.IO.FileSystemWatcher
+T:System.Text.Json.JsonSerializer
+T:System.Text.Json.JsonDocument
+T:System.Text.Json.JsonElement
+T:System.Text.Json.JsonSerializerOptions
+T:System.Text.Json.Nodes.JsonNode
+T:System.Text.Json.Utf8JsonWriter
+T:System.Text.Json.Utf8JsonReader
+T:Microsoft.Win32.Registry
+T:Microsoft.Win32.RegistryKey
+T:System.Net.Http.HttpClient
+T:Windows.Storage.FileIO
+T:Windows.Storage.PathIO
+T:System.Text.Json.Serialization.ReferenceHandler
+T:System.Text.Json.Serialization.ReferenceResolver
+T:System.Text.Json.Serialization.IJsonTypeInfoResolver
